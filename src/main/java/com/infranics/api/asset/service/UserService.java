@@ -16,13 +16,11 @@ public class UserService {
 	}
 
 	public String login(UserModel userModel) {
-		String result = userMapper.login(userModel);
-		return result;
+		return userMapper.login(userModel);
 	}
 
 	public UserModel getUser(String token) {
-		UserModel userModel = userMapper.getUser(token);
-		return userModel;
+		return userMapper.getUser(token);
 	}
 
 	public byte[] getPhoto(String token) {

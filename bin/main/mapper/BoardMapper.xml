@@ -5,23 +5,34 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
 <mapper namespace="com.infranics.api.asset.mapper.BoardMapper">
 
-	<insert id="writeBoard" parameterType="Map">
+	<insert id="writeBoard" parameterType="Map" useGeneratedKeys="true" keyProperty="gid">
 		INSERT INTO board
-		(`board`.`uid`,
-		`board`.`title`,
-		`board`.`link`,
-		`board`.`date`)
+		(
+			`board`.`uid`,
+			`board`.`title`,
+			`board`.`link`,
+			`board`.`date`
+		)
 		values
-		((SELECT
-		`user`.`uid`
-		FROM
-		`user`
-		WHERE
-		`user`.`certification` = #{token}),
-		#{boardModel.title},
-		#{boardModel.link},
-		DATE(now()));
+		(
+			(
+			SELECT
+				`user`.`uid`
+			FROM
+				`user`
+			WHERE
+				`user`.`certification` = #{token}),
+				#{boardModel.title},
+				#{boardModel.link},
+				DATE(now()
+			)
+		)
+		<selectKey keyProperty="gid" resultType="long" order="AFTER">
+        	SELECT LAST_INSERT_ID();
+    	</selectKey>
 	</insert>
+	
+	
 
 	<select id="getBoards" parameterType="String"
 		resultType="BoardModel">
@@ -59,6 +70,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		JOIN
 		`user`
 		ON `board`.`uid` = `user`.`uid`
+		ORDER BY `board`.`gid` DESC;
 	</select>
 
 	<delete id="deleteLike" parameterType="Map">
@@ -93,6 +105,44 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		#{likeModel.likeYN}
 		)
 	</insert>
+	
+	<select id="getBoard" parameterType="Map" resultType="BoardModel">
+		SELECT
+		`board`.`gid` AS `index`,
+		`user`.`name`,
+		`board`.`title`,
+		`board`.`link`,
+		`board`.`date`,
+		`like`.`like`,
+		`like`.`dislike`,
+		`like`.`userlike`
+		FROM `board`
+		LEFT OUTER JOIN
+		(SELECT
+		`likeTemp`.`gid`,
+		`likeTemp`.`like`,
+		`likeTemp`.`dislike`,
+		(SELECT
+		`likeYn` FROM `like` WHERE `like`.`gid` =
+		`likeTemp`.`gid` AND
+		`like`.`uid` = (SELECT `user`.`uid` FROM `user` WHERE
+		`user`.`certification` = #{token})) AS
+		`userlike`
+		FROM (
+		SELECT
+		`gid`,
+		COUNT(IF(`likeYn`='Y', `likeYn`, NULL)) AS `like`,
+		COUNT(IF(`likeYn`='N', `likeYn`, NULL)) AS `dislike`
+		FROM `like`
+		GROUP
+		BY `gid`
+		) AS `likeTemp`) AS `like`
+		ON `board`.`gid` = `like`.`gid`
+		JOIN
+		`user`
+		ON `board`.`uid` = `user`.`uid`
+		WHERE `board`.`gid` = #{boardIndex}
+	</select>
 
 
 

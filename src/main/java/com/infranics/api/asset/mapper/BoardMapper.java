@@ -1,6 +1,7 @@
 package com.infranics.api.asset.mapper;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -13,9 +14,11 @@ public interface BoardMapper {
 
 	List<BoardModel> getBoards(String token);
 
-	boolean writeBoard(@Param("token") String token, @Param("boardModel") BoardModel boardModel);
+	boolean writeBoard(Map map);
 
-	void deleteLike(@Param("likeModel")LikeModel likeModel);
+	void deleteLike(LikeModel likeModel);
 
-	boolean insertLike(@Param("likeModel")LikeModel likeModel);
+	boolean insertLike(LikeModel likeModel);
+
+	BoardModel getBoard(Map map);
 }

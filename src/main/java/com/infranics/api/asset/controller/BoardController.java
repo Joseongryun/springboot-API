@@ -26,18 +26,29 @@ public class BoardController {
 	public List<BoardModel> getBoards(@RequestHeader(value = "token", required = false) String token) throws Exception {
 		return boardService.getBoards(token);
 	}
+	
+	@RequestMapping(value = "/boards/{boardIndex}", method = RequestMethod.GET)
+	public BoardModel getBoard(@RequestHeader(value = "token", required = false) String token, @PathVariable("boardIndex") int boardIndex) throws Exception {
+		BoardModel boardModel =  boardService.getBoard(token, boardIndex);
+		if(boardModel == null) {
+			throw new Exception();
+		}
+		return boardModel;
+	}
 
 	@RequestMapping(value = "/boards", method = RequestMethod.POST)
-	public boolean writeBoard(@RequestHeader(value = "token", defaultValue = "") String token,
+	public long writeBoard(@RequestHeader(value = "token", defaultValue = "") String token,
 			@RequestParam("title") String title, @RequestParam("link") String link) throws Exception {
 		BoardModel boardModel = new BoardModel();
 		boardModel.setTitle(title);
 		boardModel.setLink(link);
-		return boardService.writeBoard(token, boardModel);
+		long result = boardService.writeBoard(token, boardModel);
+		System.out.println(result);
+		return result;
 	}
 
 	@RequestMapping(value = "/boards/{boardIndex}/like", method = RequestMethod.POST)
-	public boolean userLike(@RequestHeader(value = "token", defaultValue = "") String token,
+	public boolean userLike(@RequestHeader(value = "token", defaultValue = "") String token,	
 			@RequestParam("userLike") String userLike, @PathVariable("boardIndex") long boardIndex) {
 		LikeModel likeModel = new LikeModel();
 		likeModel.setGid(boardIndex);
