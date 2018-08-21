@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.infranics.api.asset.mapper.BoardMapper">
+
+	<insert id="writeBoard" parameterType="Map">
+		INSERT INTO board
+		(`board`.`uid`,
+		`board`.`title`,
+		`board`.`link`,
+		`board`.`date`)
+		values
+		((SELECT
+		`user`.`uid`
+		FROM
+		`user`
+		WHERE
+		`user`.`certification` = #{token}),
+		#{boardModel.title},
+		#{boardModel.link},
+		DATE(now()));
+	</insert>
+
+	<select id="getBoards" parameterType="String"
+		resultType="BoardModel">
+		SELECT
+		`board`.`gid` AS `index`,
+		`user`.`name`,
+		`board`.`title`,
+		`board`.`link`,
+		`board`.`date`,
+		`like`.`like`,
+		`like`.`dislike`,
+		`like`.`userlike`
+		FROM `board`
+		LEFT OUTER JOIN
+		(SELECT
+		`likeTemp`.`gid`,
+		`likeTemp`.`like`,
+		`likeTemp`.`dislike`,
+		(SELECT
+		`likeYn` FROM `like` WHERE `like`.`gid` =
+		`likeTemp`.`gid` AND
+		`like`.`uid` = (SELECT `user`.`uid` FROM `user` WHERE
+		`user`.`certification` = #{token})) AS
+		`userlike`
+		FROM (
+		SELECT
+		`gid`,
+		COUNT(IF(`likeYn`='Y', `likeYn`, NULL)) AS `like`,
+		COUNT(IF(`likeYn`='N', `likeYn`, NULL)) AS `dislike`
+		FROM `like`
+		GROUP
+		BY `gid`
+		) AS `likeTemp`) AS `like`
+		ON `board`.`gid` = `like`.`gid`
+		JOIN
+		`user`
+		ON `board`.`uid` = `user`.`uid`
+	</select>
+
+	<delete id="deleteLike" parameterType="Map">
+		DELETE FROM
+		`like`
+		WHERE
+		`like`.`gid` = #{likeModel.gid}
+		AND
+		`like`.`uid` = (
+		SELECT
+		`user`.`uid`
+		FROM `user`
+		WHERE
+		`user`.`certification` = #{likeModel.token}
+		)
+	</delete>
+
+	<insert id="insertLike" parameterType="Map">
+		INSERT INTO
+		`like`
+		(
+		`like`.`gid`,
+		`like`.`uid`,
+		`like`.`likeYN`
+		)
+		VALUES
+		(
+		#{likeModel.gid},
+		(SELECT
+		`user`.`uid` FROM `user` WHERE `user`.`certification` =
+		#{likeModel.token}),
+		#{likeModel.likeYN}
+		)
+	</insert>
+
+
+
+
+</mapper>

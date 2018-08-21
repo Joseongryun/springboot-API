@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.infranics.api.asset.mapper.UserMapper">
+
+	<insert id="join" parameterType="UserModel">
+		INSERT INTO infranics.user
+		(
+		`user`.`email`, 
+		`user`.`password`,
+		`user`.`name`, 
+		`user`.`photo`,
+		`user`.`certification`
+		)
+		values
+		(
+		#{email},
+		#{password},
+		#{name},
+		#{photo},
+		#{certification}
+		);
+	</insert>
+
+	<select id="login" parameterType="UserModel" resultType="String">
+		SELECT `user`.`certification`
+		FROM
+		infranics.user
+		WHERE
+		`email` = #{email} AND `password`= #{password};
+	</select>
+
+	<select id="getUser" parameterType="String" resultType="UserModel">
+		SELECT *
+		FROM infranics.user
+		WHERE `user`.`certification` = #{token};
+	</select>
+
+
+	<select id="getPhoto" resultType="java.util.Map">
+		SELECT `photo`
+		FROM infranics.user
+		WHERE `user`.`certification` = #{token};
+	</select>
+
+</mapper>
